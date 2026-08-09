@@ -1,0 +1,662 @@
+{
+  "name": "WA Outreach + Enrichment + Followup",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "lead-intake",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1",
+      "name": "Webhook Lead Masuk",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [120, 240]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "nama_bisnis",
+              "value": "={{$json.body.nama_bisnis || $json.nama_bisnis}}"
+            },
+            {
+              "name": "nomor_wa",
+              "value": "={{String($json.body.nomor_wa || $json.nomor_wa || '').replace(/[^0-9]/g, '')}}"
+            },
+            {
+              "name": "website",
+              "value": "={{$json.body.website || $json.website || ''}}"
+            },
+            {
+              "name": "kota",
+              "value": "={{$json.body.kota || $json.kota || ''}}"
+            },
+            {
+              "name": "niche",
+              "value": "={{$json.body.niche || $json.niche || ''}}"
+            },
+            {
+              "name": "catatan_unik",
+              "value": "={{$json.body.catatan_unik || $json.catatan_unik || ''}}"
+            },
+            {
+              "name": "chatId",
+              "value": "={{String($json.body.nomor_wa || $json.nomor_wa || '').replace(/[^0-9]/g, '') + '@c.us'}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2",
+      "name": "Normalisasi Payload",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [340, 240]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$env.GSHEET_DOCUMENT_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "sent_log"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "nomor_wa",
+              "lookupValue": "={{$json.nomor_wa}}"
+            }
+          ]
+        },
+        "options": {
+          "returnAll": true
+        }
+      },
+      "id": "3",
+      "name": "Lookup Sent Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [560, 240],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "google_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Cek duplikat berdasarkan sent_log\nconst lead = $item(0).$node['Normalisasi Payload'].json;\nconst row = $json || {};\nconst duplicate = Boolean(row.timestamp && row.nomor_wa);\n\nif (duplicate) {\n  console.log('duplicate skipped');\n  return [{ json: { ...lead, duplicate: true, duplicate_log: 'duplicate skipped' } }];\n}\n\nreturn [{ json: { ...lead, duplicate: false } }];"
+      },
+      "id": "4",
+      "name": "Check Duplicate",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [780, 240]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.duplicate}}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": "5",
+      "name": "IF Duplicate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [980, 240]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'skipped', reason: 'duplicate skipped', nomor_wa: $json.nomor_wa } }}",
+        "options": {}
+      },
+      "id": "6",
+      "name": "Response Duplicate",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1180, 140]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'gpt-4.1-mini',\n  max_tokens: 700,\n  temperature: 0.3,\n  messages: [\n    {\n      role: 'system',\n      content: 'Kamu adalah strategi marketing lokal senior untuk pasar Indonesia.\\nUntuk setiap bisnis yang diberikan, buat 3 hal dalam Bahasa Indonesia:\\n\\n1. DIAGNOSIS (maks 60 kata): apa yang salah dari online presence\\nmereka dan revenue yang bocor karenanya. Konkret, tanpa buzzword.\\n\\n2. SITE_BRIEF (maks 120 kata): angle hero, layanan utama yang\\nditonjolkan, tone yang cocok untuk industri ini di Indonesia,\\nCTA yang konversi (selalu arahkan ke WhatsApp), 1 pilihan desain\\nyang membedakan dari kompetitor lokal. Mobile-first karena\\nmayoritas traffic Indonesia dari HP.\\n\\n3. PESAN_WA (maks 65 kata): buka dengan 1 observasi spesifik\\ntentang bisnis INI, sebut layanan atau lokasi mereka, tutup dengan\\nsoft ask untuk lihat mockup. Bahasa Indonesia santai tapi\\nprofesional. Jangan sebut AI, Claude, atau tools apapun.\\nJangan pakai salam \\\"Bapak/Ibu\\\" di awal, cukup nama depan.\\n\\nReturn ONLY valid JSON with keys: diagnosis, site_brief, pesan_wa\\nNo markdown, no explanation, just raw JSON.'\n    },\n    {\n      role: 'user',\n      content: JSON.stringify({\n        nama_bisnis: $json.nama_bisnis,\n        nomor_wa: $json.nomor_wa,\n        website: $json.website,\n        kota: $json.kota,\n        niche: $json.niche,\n        catatan_unik: $json.catatan_unik\n      })\n    }\n  ]\n} }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "7",
+      "name": "OpenAI Enrichment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1180, 320],
+      "continueOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "openai_api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse respons OpenAI ke field yang dipakai workflow\nconst item = $json;\n\nif (item.error) {\n  throw new Error(`OpenAI enrichment gagal: ${item.error.message || 'unknown error'}`);\n}\n\nconst rawText = String(item.choices?.[0]?.message?.content || '').trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(rawText);\n} catch (e) {\n  const match = rawText.match(/\\{[\\s\\S]*\\}/);\n  if (!match) throw new Error('Respons OpenAI bukan JSON valid');\n  parsed = JSON.parse(match[0]);\n}\n\nreturn [{\n  json: {\n    ...$item(0).$node['Check Duplicate'].json,\n    diagnosis: String(parsed.diagnosis || '').trim(),\n    site_brief: String(parsed.site_brief || '').trim(),\n    pesan_wa: String(parsed.pesan_wa || '').trim()\n  }\n}];"
+      },
+      "id": "8",
+      "name": "Parse Enrichment",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [1380, 320]
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "seconds"
+      },
+      "id": "9",
+      "name": "Wait 2 Detik",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1560, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://waha:3000/api/sendText",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chatId: $json.chatId, text: $json.pesan_wa, session: 'default' } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "10",
+      "name": "Send WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1740, 320],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$env.GSHEET_DOCUMENT_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "sent_log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{$now}}",
+            "nama_bisnis": "={{$json.nama_bisnis}}",
+            "nomor_wa": "={{$json.nomor_wa}}",
+            "pesan_wa": "={{$json.pesan_wa}}",
+            "status": "sent"
+          }
+        },
+        "options": {}
+      },
+      "id": "11",
+      "name": "Log Sent Ke Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1940, 320],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "google_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'sent', nomor_wa: $json.nomor_wa, nama_bisnis: $json.nama_bisnis } }}",
+        "options": {}
+      },
+      "id": "12",
+      "name": "Response Berhasil",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2140, 140]
+    },
+    {
+      "parameters": {
+        "amount": 96,
+        "unit": "hours"
+      },
+      "id": "13",
+      "name": "Wait 96 Jam",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2140, 320]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$env.GSHEET_DOCUMENT_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "sent_log"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "nomor_wa",
+              "lookupValue": "={{$json.nomor_wa}}"
+            },
+            {
+              "lookupColumn": "status",
+              "lookupValue": "reply_received"
+            }
+          ]
+        },
+        "options": {
+          "returnAll": true
+        }
+      },
+      "id": "14",
+      "name": "Cek Reply Di Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [2340, 320],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "google_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Tandai apakah perlu follow-up\nconst row = $json || {};\nconst alreadyReplied = Boolean(row.timestamp && row.status === 'reply_received');\nreturn [{ json: { ...$item(0).$node['Log Sent Ke Sheet'].json, needs_followup: !alreadyReplied } }];"
+      },
+      "id": "15",
+      "name": "Check Needs Followup",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [2540, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{$json.needs_followup}}",
+              "operation": "isTrue"
+            }
+          ]
+        }
+      },
+      "id": "16",
+      "name": "IF Perlu Followup",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [2740, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  model: 'gpt-4.1-mini',\n  max_tokens: 250,\n  temperature: 0.4,\n  messages: [\n    {\n      role: 'system',\n      content: 'Kamu copywriter outreach Indonesia. Buat follow-up WhatsApp maksimal 50 kata, santai profesional, referensikan satu gap nyata dari website/current online presence bisnis ini, lalu ajak lihat mockup singkat. Return ONLY valid JSON dengan key: followup_text'\n    },\n    {\n      role: 'user',\n      content: JSON.stringify({\n        nama_bisnis: $json.nama_bisnis,\n        nomor_wa: $json.nomor_wa,\n        website: $json.website,\n        niche: $json.niche,\n        kota: $json.kota,\n        diagnosis: $json.diagnosis\n      })\n    }\n  ]\n} }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "17",
+      "name": "OpenAI Followup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2940, 320],
+      "continueOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "name": "openai_api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "// Parse JSON follow-up dari OpenAI\nif ($json.error) {\n  throw new Error(`OpenAI followup gagal: ${$json.error.message || 'unknown error'}`);\n}\n\nconst rawText = String($json.choices?.[0]?.message?.content || '').trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(rawText);\n} catch (e) {\n  const match = rawText.match(/\\{[\\s\\S]*\\}/);\n  if (!match) throw new Error('Respons followup bukan JSON valid');\n  parsed = JSON.parse(match[0]);\n}\n\nreturn [{\n  json: {\n    ...$item(0).$node['Check Needs Followup'].json,\n    followup_text: String(parsed.followup_text || '').trim()\n  }\n}];"
+      },
+      "id": "18",
+      "name": "Parse Followup",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [3140, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://waha:3000/api/sendText",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chatId: String($json.nomor_wa).replace(/[^0-9]/g, '') + '@c.us', text: $json.followup_text, session: 'default' } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "19",
+      "name": "Send Followup WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3340, 320],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$env.GSHEET_DOCUMENT_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "sent_log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{$now}}",
+            "nama_bisnis": "={{$json.nama_bisnis}}",
+            "nomor_wa": "={{$json.nomor_wa}}",
+            "pesan_wa": "={{$json.followup_text}}",
+            "status": "followup_sent"
+          }
+        },
+        "options": {}
+      },
+      "id": "20",
+      "name": "Log Followup Ke Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3540, 320],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "google_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "waha-reply",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "21",
+      "name": "Webhook Reply WAHA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [120, 620]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Filter event reply dari WAHA\nconst body = $json.body || $json;\nconst event = body.event || body.type || '';\nconst payload = body.payload || body.data || body;\nconst fromMe = Boolean(payload.fromMe);\nconst chatId = String(payload.chatId || payload.from || '');\nconst nomorWa = chatId.replace(/@.*/, '').replace(/[^0-9]/g, '');\nconst text = String(payload.body || payload.text || payload.message || '').trim();\n\nif (event !== 'message' || fromMe || !nomorWa || !text) {\n  return [];\n}\n\nreturn [{ json: { event, chatId, nomor_wa: nomorWa, incoming_text: text } }];"
+      },
+      "id": "22",
+      "name": "Filter Reply Event",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 2,
+      "position": [340, 620]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$env.GSHEET_DOCUMENT_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "sent_log"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "nomor_wa",
+              "lookupValue": "={{$json.nomor_wa}}"
+            }
+          ]
+        },
+        "options": {
+          "returnAll": true
+        }
+      },
+      "id": "23",
+      "name": "Lookup Reply Di Sent Log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [560, 620],
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "google_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.timestamp || ''}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "24",
+      "name": "IF Chat Pernah Dihubungi",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [780, 620]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://waha:3000/api/sendText",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { chatId: $env.MY_WA_NUMBER + '@c.us', text: 'Ada reply dari lead ' + ($json.nomor_wa || '-') + ': ' + ($json.incoming_text || ''), session: 'default' } }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "25",
+      "name": "Notify Me",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 620],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{$env.GSHEET_DOCUMENT_ID}}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "sent_log"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{$now}}",
+            "nama_bisnis": "reply_event",
+            "nomor_wa": "={{$json.nomor_wa}}",
+            "pesan_wa": "={{$json.incoming_text}}",
+            "status": "reply_received"
+          }
+        },
+        "options": {}
+      },
+      "id": "26",
+      "name": "Log Reply Ke Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [1180, 620],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "name": "google_sheets"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'ok' } }}",
+        "options": {}
+      },
+      "id": "27",
+      "name": "Response Reply Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1380, 620]
+    }
+  ],
+  "connections": {
+    "Webhook Lead Masuk": {
+      "main": [[{ "node": "Normalisasi Payload", "type": "main", "index": 0 }]]
+    },
+    "Normalisasi Payload": {
+      "main": [[{ "node": "Lookup Sent Log", "type": "main", "index": 0 }]]
+    },
+    "Lookup Sent Log": {
+      "main": [[{ "node": "Check Duplicate", "type": "main", "index": 0 }]]
+    },
+    "Check Duplicate": {
+      "main": [[{ "node": "IF Duplicate", "type": "main", "index": 0 }]]
+    },
+    "IF Duplicate": {
+      "main": [
+        [{ "node": "Response Duplicate", "type": "main", "index": 0 }],
+        [{ "node": "OpenAI Enrichment", "type": "main", "index": 0 }]
+      ]
+    },
+    "OpenAI Enrichment": {
+      "main": [[{ "node": "Parse Enrichment", "type": "main", "index": 0 }]]
+    },
+    "Parse Enrichment": {
+      "main": [[{ "node": "Wait 2 Detik", "type": "main", "index": 0 }]]
+    },
+    "Wait 2 Detik": {
+      "main": [[{ "node": "Send WhatsApp", "type": "main", "index": 0 }]]
+    },
+    "Send WhatsApp": {
+      "main": [[{ "node": "Log Sent Ke Sheet", "type": "main", "index": 0 }]]
+    },
+    "Log Sent Ke Sheet": {
+      "main": [
+        [{ "node": "Response Berhasil", "type": "main", "index": 0 }],
+        [{ "node": "Wait 96 Jam", "type": "main", "index": 0 }]
+      ]
+    },
+    "Wait 96 Jam": {
+      "main": [[{ "node": "Cek Reply Di Sheet", "type": "main", "index": 0 }]]
+    },
+    "Cek Reply Di Sheet": {
+      "main": [[{ "node": "Check Needs Followup", "type": "main", "index": 0 }]]
+    },
+    "Check Needs Followup": {
+      "main": [[{ "node": "IF Perlu Followup", "type": "main", "index": 0 }]]
+    },
+    "IF Perlu Followup": {
+      "main": [
+        [{ "node": "OpenAI Followup", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "OpenAI Followup": {
+      "main": [[{ "node": "Parse Followup", "type": "main", "index": 0 }]]
+    },
+    "Parse Followup": {
+      "main": [[{ "node": "Send Followup WA", "type": "main", "index": 0 }]]
+    },
+    "Send Followup WA": {
+      "main": [[{ "node": "Log Followup Ke Sheet", "type": "main", "index": 0 }]]
+    },
+    "Webhook Reply WAHA": {
+      "main": [[{ "node": "Filter Reply Event", "type": "main", "index": 0 }]]
+    },
+    "Filter Reply Event": {
+      "main": [[{ "node": "Lookup Reply Di Sent Log", "type": "main", "index": 0 }]]
+    },
+    "Lookup Reply Di Sent Log": {
+      "main": [[{ "node": "IF Chat Pernah Dihubungi", "type": "main", "index": 0 }]]
+    },
+    "IF Chat Pernah Dihubungi": {
+      "main": [
+        [{ "node": "Notify Me", "type": "main", "index": 0 }],
+        [{ "node": "Response Reply Webhook", "type": "main", "index": 0 }]
+      ]
+    },
+    "Notify Me": {
+      "main": [[{ "node": "Log Reply Ke Sheet", "type": "main", "index": 0 }]]
+    },
+    "Log Reply Ke Sheet": {
+      "main": [[{ "node": "Response Reply Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1"
+}

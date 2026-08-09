@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+coverage/
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.crt
+.DS_Store
+
+# Runtime and private automation data
+automation/data/leads.csv
+automation/data/leads_enriched.csv
+automation/data/*.private.csv
+automation/n8n/executions/
+
+# Generated starter assets not used by the Flective website
+apps/web/public/file.svg
+apps/web/public/globe.svg
+apps/web/public/next.svg
+apps/web/public/vercel.svg
+apps/web/public/window.svg
