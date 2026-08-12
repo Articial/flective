@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const links = [
+  { href: "/audit", label: "Growth Audit" },
   { href: "/services", label: "Services" },
   { href: "/work", label: "Work" },
   { href: "/about", label: "About" },
@@ -25,7 +26,7 @@ export function Header() {
         <div className="nav-links">
           {links.map((link) => <Link key={link.href} href={link.href}>{link.label}</Link>)}
         </div>
-        <Link className="button button-small nav-cta" href="/contact">Start a Project <span>→</span></Link>
+        <Link className="button button-small nav-cta" href="/contact">Request a Growth Audit <span>→</span></Link>
         <button className="menu-button" aria-expanded={open} aria-controls="mobile-menu" onClick={() => setOpen(!open)}>
           <span className="sr-only">{open ? "Close" : "Open"} menu</span>
           <span /><span />
@@ -34,7 +35,7 @@ export function Header() {
       <div id="mobile-menu" className={`mobile-menu ${open ? "is-open" : ""}`}>
         <div className="shell">
           {links.map((link) => <Link key={link.href} href={link.href} onClick={() => setOpen(false)}>{link.label}</Link>)}
-          <Link href="/contact" onClick={() => setOpen(false)}>Start a Project <span>→</span></Link>
+          <Link href="/contact" onClick={() => setOpen(false)}>Request a Growth Audit <span>→</span></Link>
         </div>
       </div>
     </header>

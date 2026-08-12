@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://articial.me"),
   title: { default: "Flective — Digital Growth & Intelligence Partner", template: "%s — Flective" },
   description: "Flective helps businesses understand what matters, decide what to change, build what they need, and grow what works.",
-  openGraph: { type: "website", locale: "en_US", siteName: "Flective", title: "Flective — Digital Growth & Intelligence Partner", description: "See clearly. Move decisively." },
+  openGraph: { type: "website", locale: "en_ID", siteName: "Flective", title: "Flective — Digital Growth & Intelligence Partner", description: "See clearly. Move decisively." },
   robots: { index: true, follow: true },
 };
 
