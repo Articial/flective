@@ -1,24 +1,27 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
 import { isLocale, LocalizedAudit, LocalizedContact, localizedPath, type Locale } from "@/components/localized-site";
 
 export function generateStaticParams() {
   return ["audit", "contact", "services", "work", "about"].flatMap((slug) => [{ locale: "id", slug }, { locale: "en", slug }]);
 }
 
-function SimplePage({ locale, slug }: { locale: Locale; slug: string }) {
-  const id = locale === "id";
-  if (slug === "services") return <section className="page-hero"><div className="shell"><p className="eyebrow">{id ? "Layanan" : "Services"}</p><h1>{id ? "Pilih masalahnya. Kami bawa kemampuan yang tepat." : "Choose the problem. We bring the right capability."}</h1><p>{id ? "Intelligence, Growth, dan Build kami satukan di sekitar masalah bisnis yang ingin diselesaikan." : "Intelligence, Growth, and Build brought together around the business problem you need to solve."}</p></div></section>;
-  if (slug === "about") return <section className="page-hero"><div className="shell"><p className="eyebrow">{id ? "Tentang Flective" : "About Flective"}</p><h1>{id ? "Kami membantu bisnis melihat masalahnya dengan lebih jelas sebelum bergerak lebih jauh." : "We help businesses see the real problem clearly before moving further."}</h1><p>{id ? "Flective adalah independent digital growth practice yang dipimpin Akbar dari Indonesia—menggabungkan strategy, technology, growth, dan intelligence." : "Flective is an independent digital growth practice led by Akbar from Indonesia—bringing strategy, technology, growth, and intelligence together."}</p><Link className="button" href={localizedPath(locale, "/contact")}>{id ? "Ceritakan konteksmu" : "Share your context"} <span>→</span></Link></div></section>;
-  if (slug === "work") return <section className="page-hero"><div className="shell"><p className="eyebrow">{id ? "Proyek dan eksperimen" : "Work and experiments"}</p><h1>{id ? "Pekerjaan yang berguna akan menghasilkan bukti." : "Useful work creates the evidence."}</h1><p>{id ? "Kami tidak akan mengarang hasil. Portfolio akan bertumbuh dari project, eksperimen, dan sistem yang benar-benar dikerjakan." : "We will not invent results. The portfolio will grow from projects, experiments, and systems that are actually built."}</p><Link className="button" href={localizedPath(locale, "/contact")}>{id ? "Diskusikan project" : "Discuss a project"} <span>→</span></Link></div></section>;
-  return null;
-}
-
-export default async function LocalizedPage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+export default async function LocalePage({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale, slug } = await params;
   if (!isLocale(locale)) notFound();
-  if (slug === "audit") return <LocalizedAudit locale={locale} />;
-  if (slug === "contact") return <LocalizedContact locale={locale} />;
-  if (["services", "work", "about"].includes(slug)) return <SimplePage locale={locale} slug={slug} />;
-  notFound();
+  const l = locale as Locale;
+  let content: React.ReactNode;
+  if (slug === "audit") content = <LocalizedAudit locale={l} />;
+  else if (slug === "contact") content = <LocalizedContact locale={l} />;
+  else if (slug === "services") content = <SimplePage locale={l} title={l === "id" ? "Layanan yang membantu bisnis bertumbuh." : "Services that help businesses grow."} intro={l === "id" ? "Mulai dari masalah yang sedang menghambat bisnis, lalu pilih pekerjaan yang paling berdampak." : "Start with the business problem, then choose the work that will make the biggest difference."} />;
+  else if (slug === "work") content = <SimplePage locale={l} title={l === "id" ? "Pekerjaan yang dibangun untuk bergerak maju." : "Work built to move things forward."} intro={l === "id" ? "Kami hanya mempublikasikan materi yang sudah disetujui. Sementara itu, audit adalah cara paling langsung untuk melihat bagaimana kami berpikir." : "We only publish material approved for public sharing. Until then, an audit is the most direct way to see how we think."} />;
+  else if (slug === "about") content = <SimplePage locale={l} title={l === "id" ? "Lebih sedikit asumsi. Lebih banyak keputusan yang tepat." : "Fewer assumptions. Better decisions."} intro={l === "id" ? "Flective adalah partner pertumbuhan digital untuk bisnis yang ingin memperbaiki hal penting, bukan hanya menambah aktivitas." : "Flective is a digital growth partner for businesses that want to fix what matters, not just add more activity."} />;
+  else notFound();
+  return <><Header locale={l} /><main id="main-content">{content}</main><Footer locale={l} /></>;
+}
+
+function SimplePage({ locale, title, intro }: { locale: Locale; title: string; intro: string }) {
+  return <section className="page-hero"><div className="shell"><p className="eyebrow">Flective</p><h1>{title}</h1><p className="lede">{intro}</p><Link className="button" href={localizedPath(locale, "/audit")}>{locale === "id" ? "Mulai dengan Audit" : "Get a Growth Audit"} <span>→</span></Link></div></section>;
 }

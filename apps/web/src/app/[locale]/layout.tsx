@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import "../globals.css";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
-import { isLocale, type Locale } from "@/components/localized-site";
+import { isLocale } from "@/components/localized-site";
 
 export function generateStaticParams() { return [{ locale: "id" }, { locale: "en" }]; }
 
@@ -16,5 +14,5 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 export default async function LocaleLayout({ children, params }: Readonly<{ children: React.ReactNode; params: Promise<{ locale: string }> }>) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  return <><Header locale={locale as Locale} /><main id="main-content">{children}</main><Footer locale={locale as Locale} /></>;
+  return <>{children}</>;
 }
