@@ -60,6 +60,23 @@ button { cursor: pointer; }
 .hero-stat small { color: var(--muted); font-size: .82rem; line-height: 1.4; }
 @media (max-width: 760px) { .hero-stats { grid-template-columns: 1fr; } }
 .commercial-hero h1 { max-width: 1050px; }
+.button-accent { background: var(--acid); color: var(--ink); }
+.button-accent:hover { background: var(--ink); color: var(--paper); }
+.capability-grid .capability { border-radius: 16px; border: 1px solid transparent; }
+.capability-grid .capability:first-child { background: var(--acid); border-color: var(--acid); }
+.capability-grid .capability:first-child .number, .capability-grid .capability:first-child p { color: color-mix(in srgb, var(--ink) 72%, transparent); }
+.capability-grid .capability:first-child:hover, .capability-grid .capability:hover { border-color: var(--ink); }
+.faq-section { background: var(--paper-deep); }
+.faq-head { display: grid; grid-template-columns: 30% 1fr; gap: 48px; align-items: start; }
+.faq-list { margin-top: clamp(55px, 8vw, 110px); border-top: 1px solid var(--line); }
+.faq-list details { border-bottom: 1px solid var(--line); }
+.faq-list summary { display: flex; justify-content: space-between; align-items: baseline; gap: 24px; padding: 22px 4px; cursor: pointer; font-size: clamp(1.15rem, 1.8vw, 1.6rem); letter-spacing: -.03em; list-style: none; transition: color .2s; }
+.faq-list summary::-webkit-details-marker { display: none; }
+.faq-list summary span { font-size: 1.5rem; line-height: 1; color: var(--muted); transition: transform .2s, color .2s; }
+.faq-list details[open] summary span { transform: rotate(45deg); color: var(--oxide); }
+.faq-list summary:hover { color: var(--oxide); }
+.faq-list details p { max-width: 720px; margin: 0; padding: 0 4px 24px; color: var(--muted); font-size: 1.02rem; }
+@media (max-width: 760px) { .faq-head { grid-template-columns: 1fr; gap: 24px; } }
 .offer-section { background: var(--paper-deep); }
 .offer-layout { display: grid; grid-template-columns: 1fr .9fr; gap: clamp(40px, 10vw, 150px); align-items: start; }
 .offer-card { padding: 28px; background: var(--ink); color: var(--paper); }
