@@ -1,17 +1,2 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-
-export const metadata: Metadata = { title: "Growth Audit", description: "Find the conversion and growth friction costing your business attention, enquiries, and revenue." };
-
-const deliverables = [["01", "Signal review", "A practical read of your website, store, customer journey, and available performance signals."], ["02", "Friction map", "The clearest points where attention, intent, or measurement are being lost."], ["03", "Priority plan", "Five high-leverage moves, sequenced into a realistic 30-day action plan."]];
-const fit = ["You have a website, store, or active digital channel", "You are getting attention but not enough action", "You want priorities before investing in more activity", "You are open to implementation after the diagnosis"];
-
-export default function AuditPage() {
-  return <>
-    <section className="page-hero audit-hero"><div className="shell"><p className="eyebrow">Flective / Fixed-scope offer</p><h1>Find the leak before you pour in more traffic.</h1><p>A focused Growth Audit for businesses and e-commerce teams that have digital activity, but need a clearer path from attention to action.</p><div className="audit-buyline"><strong>Fixed scope</strong><span>Website, store, journey, and signals</span><span>30-day priority plan</span></div><div className="hero-actions page-actions"><Link className="button" href="/contact">Request a Growth Audit <span>→</span></Link><a className="text-link" href="#deliverables">See what you receive <span>↓</span></a></div></div></section>
-    <section className="section" id="deliverables"><div className="shell"><div className="section-intro"><p className="eyebrow">What you get</p><div><h2 className="section-heading">Not a score. A decision document.</h2><p className="section-lede">The audit is designed to answer one commercial question: what should we fix first to create a better path to enquiry, purchase, or learning?</p></div></div><div className="audit-deliverables">{deliverables.map(([number, title, copy]) => <article key={number}><span>{number}</span><h3>{title}</h3><p>{copy}</p></article>)}</div></div></section>
-    <section className="section system-section"><div className="shell"><p className="eyebrow">The method</p><h2 className="section-heading">Three steps to a clearer next move.</h2><div className="audit-steps"><div><span>01</span><strong>Share the context</strong><p>Tell us what you sell, where customers come from, and what currently feels stuck.</p></div><div><span>02</span><strong>We investigate</strong><p>We examine the visible journey, market context, and signals available to you.</p></div><div><span>03</span><strong>You get the priorities</strong><p>Receive a concise plan. Implementation support is available when the next move is clear.</p></div></div></div></section>
-    <section className="section"><div className="shell audit-fit"><div><p className="eyebrow">Good fit if</p><h2 className="section-heading">You have activity. You need clarity.</h2><p className="section-lede">The audit is deliberately practical. It is for teams who want to make a better next investment—not buy a large transformation programme.</p></div><ul>{fit.map((item) => <li key={item}>{item}</li>)}</ul></div></section>
-    <section className="section pricing-section"><div className="shell pricing-card"><div><p className="eyebrow">Commercially simple</p><h2>Start small. Know more. Decide better.</h2><p>We will confirm scope and pricing after a short fit check. No obligation to buy a larger implementation project.</p></div><Link className="button" href="/contact">Ask about the audit <span>→</span></Link></div></section>
-  </>;
-}
+import { redirect } from "next/navigation";
+export default function Page(){ redirect("/en/audit"); }

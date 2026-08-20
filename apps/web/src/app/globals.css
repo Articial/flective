@@ -234,6 +234,36 @@ button { cursor: pointer; }
 .pricing-card h2 { max-width: 650px; margin: 0; font-size: clamp(2rem, 4vw, 3.6rem); line-height: 1; letter-spacing: -.025em; }
 .pricing-card p:not(.eyebrow) { max-width: 540px; margin: 22px 0 0; color: var(--muted); }
 
+/* ---------- Expanded commercial content ---------- */
+.audit-deliverables { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 56px; }
+.audit-deliverables article, .audit-steps article, .fit-grid article, .services-expanded > article, .response-card { padding: 26px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--paper); box-shadow: var(--shadow); }
+.audit-deliverables span, .audit-steps span { font: .72rem var(--font-mono); color: var(--muted); }
+.audit-deliverables h3, .audit-steps h3 { margin: 58px 0 12px; font-size: clamp(1.35rem, 2vw, 1.8rem); letter-spacing: -.02em; }
+.audit-deliverables p, .audit-steps p, .fit-grid p, .service-card-body p { color: var(--muted); }
+.split-panels { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(40px, 8vw, 120px); align-items: start; }
+.check-list { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--line); }
+.check-list li { position: relative; padding: 16px 0 16px 32px; border-bottom: 1px solid var(--line); }
+.check-list li::before { content: "✓"; position: absolute; left: 0; color: var(--ink); font-weight: 800; }
+.muted-list li::before { content: "—"; color: var(--muted); }
+.audit-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 56px; }
+.audit-steps article { background: color-mix(in srgb, var(--paper) 7%, transparent); border-color: color-mix(in srgb, var(--paper) 14%, transparent); color: var(--paper); box-shadow: none; }
+.audit-steps article p, .audit-steps article span { color: color-mix(in srgb, var(--paper) 60%, transparent); }
+.fit-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+.fit-grid article h2 { margin: 10px 0 32px; font-size: clamp(1.8rem, 3vw, 3rem); line-height: 1; letter-spacing: -.025em; }
+.services-expanded { display: grid; gap: 22px; }
+.services-expanded > article { padding: clamp(26px, 4vw, 52px); }
+.service-card-head { display: grid; grid-template-columns: 12% 1fr; gap: 24px; }
+.service-card-head > span { font: .74rem var(--font-mono); color: var(--muted); }
+.service-card-head h2 { max-width: 900px; margin: 6px 0 0; font-size: clamp(2.2rem, 5vw, 5rem); line-height: .98; letter-spacing: -.035em; }
+.service-card-body { display: grid; grid-template-columns: .8fr 1.2fr; gap: 50px; margin: 56px 0 30px 12%; }
+.service-card-body strong { display: block; margin-bottom: 18px; font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; }
+.service-card-body .check-list { margin-top: 0; }
+.about-copy { display: grid; gap: 24px; }
+.about-copy p { margin: 0; font-size: clamp(1.15rem, 2vw, 1.5rem); line-height: 1.45; color: var(--muted); }
+.response-card { margin-top: 32px; background: var(--surface); box-shadow: none; }
+.response-card ol { margin: 18px 0 0; padding-left: 22px; color: var(--muted); }
+.response-card li + li { margin-top: 12px; }
+
 /* ---------- Services pages ---------- */
 .service-list { border-top: 1px solid var(--line); }
 .service-row { display: grid; grid-template-columns: 10% 30% 1fr auto; gap: 22px; align-items: center; padding: 24px 0; border-bottom: 1px solid var(--line); }
@@ -318,9 +348,11 @@ button { cursor: pointer; }
   .hero-stats { grid-template-columns: 1fr; }
   .hero-kpis { grid-template-columns: repeat(3, 1fr); }
   .hero-dash { grid-template-columns: 34px 1fr; }
-  .section-intro, .detail-grid, .case-body, .contact-layout, .offer-layout, .faq-head { grid-template-columns: 1fr; gap: 26px; }
+  .section-intro, .detail-grid, .case-body, .contact-layout, .offer-layout, .faq-head, .split-panels, .fit-grid, .service-card-body { grid-template-columns: 1fr; gap: 26px; }
   .friction-list div { grid-template-columns: 26% 1fr; }
-  .loop, .why-grid, .capability-grid, .service-process { grid-template-columns: 1fr; }
+  .loop, .why-grid, .capability-grid, .service-process, .audit-steps, .audit-deliverables { grid-template-columns: 1fr; }
+  .service-card-body { margin-left: 0; }
+  .service-card-head { grid-template-columns: 18% 1fr; }
   .loop-step { padding: 18px; }
   .capability { min-height: 320px; }
   .capability h3 { margin-top: 60px; }
