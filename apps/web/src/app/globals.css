@@ -30,6 +30,17 @@
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--font-geist), Arial, sans-serif; font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+
+/* ---------- Scroll motion ---------- */
+.scroll-progress { --scroll-progress: 0; position: fixed; inset: 0 0 auto; z-index: 1000; height: 3px; background: var(--acid); transform: scaleX(var(--scroll-progress)); transform-origin: left center; pointer-events: none; will-change: transform; }
+.motion-ready .scroll-reveal { opacity: 0; transform: translate3d(0, 18px, 0); filter: blur(5px); transition: opacity .58s cubic-bezier(.2,.8,.2,1) var(--reveal-delay, 0ms), transform .58s cubic-bezier(.2,.8,.2,1) var(--reveal-delay, 0ms), filter .58s ease var(--reveal-delay, 0ms); will-change: transform, opacity, filter; }
+.motion-ready .scroll-reveal.is-revealed { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+.motion-ready .capability.scroll-reveal,
+.motion-ready .work-card.scroll-reveal,
+.motion-ready .services-expanded > article.scroll-reveal { transform: translate3d(0, 24px, 0) scale(.985); }
+.motion-ready .capability.scroll-reveal.is-revealed,
+.motion-ready .work-card.scroll-reveal.is-revealed,
+.motion-ready .services-expanded > article.scroll-reveal.is-revealed { transform: translate3d(0, 0, 0) scale(1); }
 a { color: inherit; text-decoration: none; }
 button, input, textarea, select { font: inherit; }
 button { cursor: pointer; }
@@ -368,4 +379,8 @@ button { cursor: pointer; }
   .footer-bottom p:last-child { justify-self: start; }
 }
 
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  .scroll-progress { display: none; }
+  .scroll-reveal { opacity: 1 !important; transform: none !important; filter: none !important; }
+}

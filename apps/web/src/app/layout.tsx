@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteChrome } from "@/components/site-chrome";
+import { ScrollMotion } from "@/components/scroll-motion";
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" className={`${geist.variable} ${geistMono.variable}`}>
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
+        <ScrollMotion />
         <SiteChrome>{children}</SiteChrome>
       </body>
     </html>
