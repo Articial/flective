@@ -64,7 +64,9 @@ button { cursor: pointer; }
 
 /* ---------- Hero (LahAgency split) ---------- */
 .hero { position: relative; border-bottom: 1px solid var(--line); overflow: hidden; }
-.hero-inner { width: var(--shell); margin: 0 auto; padding: clamp(64px, 9vw, 128px) 0 clamp(48px, 7vw, 90px); }
+.hero::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(color-mix(in srgb, var(--ink) 20%, transparent) 1.2px, transparent 1.2px); background-size: 26px 26px; -webkit-mask-image: radial-gradient(ellipse at 28% 30%, #000 0%, transparent 62%); mask-image: radial-gradient(ellipse at 28% 30%, #000 0%, transparent 62%); opacity: .5; animation: dots-breathe 5s ease-in-out infinite; pointer-events: none; }
+@keyframes dots-breathe { 0%, 100% { opacity: .25; } 50% { opacity: .6; } }
+.hero-inner { position: relative; width: var(--shell); margin: 0 auto; padding: clamp(64px, 9vw, 128px) 0 clamp(48px, 7vw, 90px); }
 .hero-label { display: flex; justify-content: space-between; margin-bottom: clamp(28px, 5vw, 52px); font: .72rem var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 .hero-split { display: grid; grid-template-columns: 1.12fr .88fr; gap: clamp(44px, 6vw, 90px); align-items: center; }
 .hero h1 { max-width: 900px; margin: 0; font-size: var(--display); font-weight: 680; line-height: .98; letter-spacing: -.03em; }
@@ -86,17 +88,26 @@ button { cursor: pointer; }
 .hero-side i:first-child { background: var(--acid); }
 .hero-main { padding: 16px; display: grid; gap: 14px; }
 .hero-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-.hero-kpis div { padding: 12px 12px 8px; border: 1px solid color-mix(in srgb, var(--paper) 12%, transparent); border-radius: 12px; display: grid; gap: 10px; }
+.hero-kpis div { padding: 12px 12px 8px; border: 1px solid color-mix(in srgb, var(--paper) 12%, transparent); border-radius: 12px; display: grid; gap: 10px; opacity: 0; animation: rise-in .55s ease-out forwards; }
+.hero-kpis div:nth-child(1) { animation-delay: .35s; }
+.hero-kpis div:nth-child(2) { animation-delay: .55s; }
+.hero-kpis div:nth-child(3) { animation-delay: .75s; }
+@keyframes rise-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 .hero-kpis span { font: .64rem var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--paper) 50%, transparent); }
 .hero-kpis svg { width: 100%; height: 22px; color: var(--acid); }
 .hero-chart { border: 1px solid color-mix(in srgb, var(--paper) 12%, transparent); border-radius: 12px; padding: 6px; }
 .hero-chart-grid { position: relative; border-radius: 8px; overflow: hidden; }
 .hero-chart-grid svg { display: block; width: 100%; height: auto; }
 .hero-chart-grid line { stroke: color-mix(in srgb, var(--paper) 8%, transparent); stroke-width: 1; }
+.hero-chart-grid path.chart-line { stroke-dasharray: 1400; stroke-dashoffset: 1400; animation: dash-draw 2.6s cubic-bezier(.6, .05, .2, 1) forwards .5s; filter: drop-shadow(0 0 7px color-mix(in srgb, var(--acid) 55%, transparent)); }
+@keyframes dash-draw { to { stroke-dashoffset: 0; } }
 .hero-chart-meta { display: flex; justify-content: space-between; padding: 10px 12px 8px; font: .64rem var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: color-mix(in srgb, var(--paper) 55%, transparent); }
 .hero-chart-meta span:first-child { color: var(--acid); }
 .hero-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
-.hero-statcard { padding: 24px 22px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--paper); box-shadow: var(--shadow); display: grid; gap: 6px; }
+.hero-statcard { padding: 24px 22px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--paper); box-shadow: var(--shadow); display: grid; gap: 6px; animation: float-y 7s ease-in-out infinite; }
+.hero-statcard:nth-child(2) { animation-delay: 1.4s; }
+.hero-statcard:nth-child(3) { animation-delay: 2.8s; }
+@keyframes float-y { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 .hero-statcard.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .hero-statcard.dark span, .hero-statcard.dark small { color: color-mix(in srgb, var(--paper) 62%, transparent); }
 .hero-statcard.accent { background: var(--acid); border-color: var(--acid); }
